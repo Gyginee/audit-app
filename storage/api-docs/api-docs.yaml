@@ -1,0 +1,863 @@
+swagger: '2.0'
+info:
+  description: 'API for managing various resources including users, stores, and reports'
+  version: '1.0.0'
+  title: 'Audit Management API'
+
+basePath: '/api'
+schemes:
+  - 'http'
+  - 'https'
+paths:
+# Users
+  /users:
+    get:
+      tags:
+        - Users
+      summary: 'List all users'
+      description: 'Retrieve a list of all users'
+      responses:
+        '200':
+          description: 'A list of users'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/User'
+    post:
+      tags:
+        - Users
+      summary: 'Create a new user'
+      description: 'Create a new user with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'User object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: 'User created'
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: 'Get a single user'
+      description: 'Retrieve information for a single user by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the user to return'
+      responses:
+        '200':
+          description: 'A single user'
+          schema:
+            $ref: '#/definitions/User'
+    put:
+      tags:
+         - Users
+      summary: 'Update a user'
+      description: 'Update the information for a single user by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the user to return'
+        - in: 'body'
+          name: 'body'
+          description: 'User object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: 'User updated'
+    delete:
+      tags:
+         - Users
+      summary: 'Delete a user'
+      description: 'Delete a single user by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the user to return'
+      responses:
+        '204':
+          description: 'User deleted'
+# Stores
+  /stores:
+    get:
+      tags:
+        - Stores
+      summary: 'List all stores'
+      description: 'Retrieve a list of all stores in the system'
+      responses:
+        '200':
+          description: 'An array of stores'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Store'
+    post:
+      tags:
+        - Stores
+      summary: 'Create a new store'
+      description: 'Create a new store with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Store object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/Store'
+      responses:
+        '201':
+          description: 'Store created'
+  /stores/{id}:
+    get:
+      tags:
+        - Stores
+      summary: 'Get a single store'
+      description: 'Retrieve detailed information about a store by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the store to return'
+      responses:
+        '200':
+          description: 'Detailed information about a store'
+          schema:
+            $ref: '#/definitions/Store'
+    put:
+      tags:
+        - Stores
+      summary: 'Update a store'
+      description: 'Update an existing store with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the store to update'
+        - in: 'body'
+          name: 'body'
+          description: 'Store object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/Store'
+      responses:
+        '200':
+          description: 'Store updated'
+    delete:
+      tags:
+        - Stores
+      summary: 'Delete a store'
+      description: 'Delete a store from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the store to delete'
+      responses:
+        '204':
+          description: 'Store deleted'
+#Provinces
+  /provinces:
+    get:
+      tags:
+        - Provinces
+      summary: 'List all provinces'
+      description: 'Retrieve a list of all provinces in the system'
+      responses:
+        '200':
+          description: 'An array of provinces'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Province'
+    post:
+      tags:
+        - Provinces
+      summary: 'Create a new province'
+      description: 'Create a new province with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Province object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/Province'
+      responses:
+        '201':
+          description: 'Province created'
+
+  /provinces/{id}:
+    get:
+      tags:
+        - Provinces
+      summary: 'Get a single province'
+      description: 'Retrieve detailed information about a province by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the province to return'
+      responses:
+        '200':
+          description: 'Detailed information about a province'
+          schema:
+            $ref: '#/definitions/Province'
+    put:
+      tags:
+        - Provinces
+      summary: 'Update a province'
+      description: 'Update an existing province with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the province to update'
+        - in: 'body'
+          name: 'body'
+          description: 'Province object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/Province'
+      responses:
+        '200':
+          description: 'Province updated'
+    delete:
+      tags:
+        - Provinces
+      summary: 'Delete a province'
+      description: 'Delete a province from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the province to delete'
+      responses:
+        '204':
+          description: 'Province deleted'
+#AuditRoundOnes
+  /auditroundones:
+    get:
+      tags:
+        - Audit Round Ones
+      summary: 'List all audit round ones'
+      description: 'Retrieve a list of all first round audits in the system'
+      responses:
+        '200':
+          description: 'An array of first round audits'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/AuditRoundOne'
+    post:
+      tags:
+        - Audit Round Ones
+      summary: 'Create a new first round audit'
+      description: 'Create a new audit for the first round with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'AuditRoundOne object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/AuditRoundOne'
+      responses:
+        '201':
+          description: 'First round audit created'
+
+  /auditroundones/{id}:
+    get:
+      tags:
+        - Audit Round Ones
+      summary: 'Get a single first round audit'
+      description: 'Retrieve detailed information about a first round audit by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the first round audit to return'
+      responses:
+        '200':
+          description: 'Detailed information about a first round audit'
+          schema:
+            $ref: '#/definitions/AuditRoundOne'
+    put:
+      tags:
+        - Audit Round Ones
+      summary: 'Update a first round audit'
+      description: 'Update an existing first round audit with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the first round audit to update'
+        - in: 'body'
+          name: 'body'
+          description: 'AuditRoundOne object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/AuditRoundOne'
+      responses:
+        '200':
+          description: 'First round audit updated'
+    delete:
+      tags:
+        - Audit Round Ones
+      summary: 'Delete a first round audit'
+      description: 'Delete a first round audit from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the first round audit to delete'
+      responses:
+        '204':
+          description: 'First round audit deleted'
+#AuditRoundTwos
+  /auditroundtwos:
+    get:
+      tags:
+        - Audit Round Twos
+      summary: 'List all audit round twos'
+      description: 'Retrieve a list of all second round audits in the system'
+      responses:
+        '200':
+          description: 'An array of second round audits'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/AuditRoundTwo'
+    post:
+      tags:
+        - Audit Round Twos
+      summary: 'Create a new second round audit'
+      description: 'Create a new audit for the second round with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'AuditRoundTwo object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/AuditRoundTwo'
+      responses:
+        '201':
+          description: 'Second round audit created'
+
+  /auditroundtwos/{id}:
+    get:
+      tags:
+        - Audit Round Twos
+      summary: 'Get a single second round audit'
+      description: 'Retrieve detailed information about a second round audit by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the second round audit to return'
+      responses:
+        '200':
+          description: 'Detailed information about a second round audit'
+          schema:
+            $ref: '#/definitions/AuditRoundTwo'
+    put:
+      tags:
+        - Audit Round Twos
+      summary: 'Update a second round audit'
+      description: 'Update an existing second round audit with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the second round audit to update'
+        - in: 'body'
+          name: 'body'
+          description: 'AuditRoundTwo object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/AuditRoundTwo'
+      responses:
+        '200':
+          description: 'Second round audit updated'
+    delete:
+      tags:
+        - Audit Round Twos
+      summary: 'Delete a second round audit'
+      description: 'Delete a second round audit from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the second round audit to delete'
+      responses:
+        '204':
+          description: 'Second round audit deleted'
+#ImagePaths
+  /imagepaths:
+    get:
+      tags:
+        - ImagePaths
+      summary: 'List all image paths'
+      description: 'Retrieve a list of all image paths in the system'
+      responses:
+        '200':
+          description: 'An array of image paths'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/ImagePath'
+    post:
+      tags:
+        - ImagePaths
+      summary: 'Create a new image path'
+      description: 'Create a new image path with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'ImagePath object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/ImagePath'
+      responses:
+        '201':
+          description: 'Image path created'
+
+  /imagepaths/{id}:
+    get:
+      tags:
+        - ImagePaths
+      summary: 'Get a single image path'
+      description: 'Retrieve detailed information about an image path by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the image path to return'
+      responses:
+        '200':
+          description: 'Detailed information about an image path'
+          schema:
+            $ref: '#/definitions/ImagePath'
+    put:
+      tags:
+        - ImagePaths
+      summary: 'Update an image path'
+      description: 'Update an existing image path with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the image path to update'
+        - in: 'body'
+          name: 'body'
+          description: 'ImagePath object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/ImagePath'
+      responses:
+        '200':
+          description: 'Image path updated'
+    delete:
+      tags:
+        - ImagePaths
+      summary: 'Delete an image path'
+      description: 'Delete an image path from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the image path to delete'
+      responses:
+        '204':
+          description: 'Image path deleted'
+
+#Schedules
+  /schedules:
+    get:
+      tags:
+        - Schedules
+      summary: 'List all schedules'
+      description: 'Retrieve a list of all schedules in the system'
+      responses:
+        '200':
+          description: 'An array of schedules'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Schedule'
+    post:
+      tags:
+        - Schedules
+      summary: 'Create a new schedule'
+      description: 'Create a new schedule with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Schedule object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+      responses:
+        '201':
+          description: 'Schedule created'
+
+  /schedules/{id}:
+    get:
+      tags:
+        - Schedules
+      summary: 'Get a single schedule'
+      description: 'Retrieve detailed information about a schedule by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the schedule to return'
+      responses:
+        '200':
+          description: 'Detailed information about a schedule'
+          schema:
+            $ref: '#/definitions/Schedule'
+    put:
+      tags:
+        - Schedules
+      summary: 'Update a schedule'
+      description: 'Update an existing schedule with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the schedule to update'
+        - in: 'body'
+          name: 'body'
+          description: 'Schedule object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+      responses:
+        '200':
+          description: 'Schedule updated'
+    delete:
+      tags:
+        - Schedules
+      summary: 'Delete a schedule'
+      description: 'Delete a schedule from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the schedule to delete'
+      responses:
+        '204':
+          description: 'Schedule deleted'
+#Reports
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: 'List all reports'
+      description: 'Retrieve a list of all reports in the system'
+      responses:
+        '200':
+          description: 'An array of reports'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Report'
+    post:
+      tags:
+        - Reports
+      summary: 'Create a new report'
+      description: 'Create a new report with the given data'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Report object that needs to be added to the system'
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '201':
+          description: 'Report created'
+
+  /reports/{id}:
+    get:
+      tags:
+        - Reports
+      summary: 'Get a single report'
+      description: 'Retrieve detailed information about a report by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the report to return'
+      responses:
+        '200':
+          description: 'Detailed information about a report'
+          schema:
+            $ref: '#/definitions/Report'
+    put:
+      tags:
+        - Reports
+      summary: 'Update a report'
+      description: 'Update an existing report with the given data'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the report to update'
+        - in: 'body'
+          name: 'body'
+          description: 'Report object with updated fields'
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '200':
+          description: 'Report updated'
+    delete:
+      tags:
+        - Reports
+      summary: 'Delete a report'
+      description: 'Delete a report from the system by ID'
+      parameters:
+        - in: 'path'
+          name: 'id'
+          type: 'integer'
+          required: true
+          description: 'ID of the report to delete'
+      responses:
+        '204':
+          description: 'Report deleted'
+
+  # Repeat the structure above for stores, provinces, auditroundones,
+  # auditroundtwos, imagepaths, schedules, reports with their corresponding
+  # definitions and parameters as needed.
+definitions:
+
+  User:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+      type:
+        type: 'string'
+      full_name:
+        type: 'string'
+      username:
+        type: 'string'
+      password:
+        type: 'string'
+
+  Store:
+    type: 'object'
+    required:
+      - 'store_code'
+      - 'store_name'
+      - 'address'
+      - 'province_id'
+    properties:
+      store_code:
+        type: 'string'
+        description: 'Unique code for identifying the store'
+      store_name:
+        type: 'string'
+        description: 'The name of the store'
+      address:
+        type: 'string'
+        description: 'The address of the store'
+      province_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'The ID of the province where the store is located'
+      latitude:
+        type: 'number'
+        format: 'float'
+        description: 'Latitude coordinate for the store location'
+      longitude:
+        type: 'number'
+        format: 'float'
+        description: 'Longitude coordinate for the store location'
+
+  Province:
+    type: 'object'
+    required:
+      - 'province_id'
+    properties:
+      province_id:
+        type: 'integer'
+        format: 'int64'
+      province_name:
+        type: 'string'
+
+  AuditRoundOne:
+    type: 'object'
+    required:
+      - 'id'
+      - 'store_code'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+        description: 'Unique identifier for the audit round one'
+      store_code:
+        type: 'string'
+        description: 'Code of the store related to the audit'
+      confirm:
+        type: 'boolean'
+        description: 'Confirmation status of the audit'
+      position:
+        type: 'string'
+        description: 'Position of the auditor'
+      name:
+        type: 'string'
+        description: 'Name of the auditor'
+      phone:
+        type: 'string'
+        description: 'Contact phone number of the auditor'
+      user_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the user associated with the audit'
+      report_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the report associated with the audit'
+
+  AuditRoundTwo:
+    type: 'object'
+    required:
+      - 'id'
+      - 'store_code'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+        description: 'Unique identifier for the audit round two'
+      store_code:
+        type: 'string'
+        description: 'Code of the store related to the audit'
+      user_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the user associated with the audit'
+      report_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the report associated with the audit'
+
+  ImagePath:
+    type: 'object'
+    required:
+      - 'id'
+      - 'url'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+        description: 'Unique identifier for the image path'
+      url:
+        type: 'string'
+        description: 'URL of the image'
+      latitude:
+        type: 'number'
+        format: 'float'
+        description: 'Latitude coordinate where the image was taken'
+      longitude:
+        type: 'number'
+        format: 'float'
+        description: 'Longitude coordinate where the image was taken'
+      type:
+        type: 'string'
+        description: 'Type of the image or its purpose'
+      round_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the audit round associated with this image'
+
+  Schedule:
+    type: 'object'
+    required:
+      - 'id'
+      - 'user_id'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+        description: 'Unique identifier for the schedule'
+      user_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the user associated with the schedule'
+      type:
+        type: 'string'
+        description: 'Type of the schedule'
+      round_id:
+        type: 'integer'
+        format: 'int64'
+        description: 'ID of the audit round associated with the schedule'
+      addDate:
+        type: 'string'
+        format: 'date'
+        description: 'Date when the schedule was added'
+      startDate:
+        type: 'string'
+        format: 'date'
+        description: 'Start date of the schedule'
+      endDate:
+        type: 'string'
+        format: 'date'
+        description: 'End date of the schedule'
+
+
+  Report:
+    type: 'object'
+    required:
+      - 'id'
+    properties:
+      id:
+        type: 'integer'
+        format: 'int64'
+        description: 'Unique identifier for the report'
+      status:
+        type: 'string'
+        description: 'Status of the report'
+      note:
+        type: 'string'
+        description: 'Additional notes or comments on the report'
+      created_at:
+        type: 'string'
+        format: 'date-time'
+        description: 'Creation date and time of the report'
+      updated_at:
+        type: 'string'
+        format: 'date-time'
+        description: 'Last update date and time of the report'

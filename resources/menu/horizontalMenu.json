@@ -1,0 +1,29 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "dashboard"
+    },
+    {
+      "url": "report",
+      "icon": "menu-icon tf-icons ti ti-file",
+      "name": "Báo cáo",
+      "slug": "report"
+    },
+    {
+      "url": "schedule",
+      "name": "Lịch làm việc",
+      "icon": "menu-icon tf-icons ti ti-alert-triangle",
+      "slug": "schedule"
+    },
+    {
+      "url": "user",
+      "name": "Tài khoản",
+      "icon": "menu-icon tf-icons ti ti-login",
+      "slug": "user",
+      "target": "user"
+    }
+  ]
+}
