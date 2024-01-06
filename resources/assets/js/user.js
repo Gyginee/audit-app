@@ -480,11 +480,15 @@ $(function () {
     $('.datatables-users tbody').on('click', '.toggle-active', function () {
       var row = $(this).closest('tr');
       var data = dt_user.row(row).data();
-      var id = data.id; // Assuming 'id' is the property that holds the record's ID
-      var isActive = data.active; // Assuming 'active' is a boolean
+      var id = data.id;
 
-      var newStatus = !isActive; // Toggle the status
-      if (newStatus == 1) var dataStatus = "true"; else dataStatus = "false";
+      // Determine if the current status is 'Active'
+      var isActive = data.active === 'Hoạt động';
+
+      // Convert the text to boolean for the API request
+      var newStatusForApi = !isActive;
+
+      // Determine the action text
       var actionText = isActive ? 'vô hiệu hóa' : 'kích hoạt';
 
       Swal.fire({
@@ -506,8 +510,9 @@ $(function () {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ active: dataStatus })
+            body: JSON.stringify({ active: newStatusForApi })
           })
+            .then(response => response.json())
             .then(data => {
               // Update the UI to reflect the new status
               Swal.fire({
@@ -518,8 +523,13 @@ $(function () {
                   confirmButton: 'btn btn-success'
                 }
               });
+
+              // Convert the API response back to text
+              var newStatusForTable = data.active ? 'Hoạt động' : 'Tạm dừng';
+
               // Update the data object with the new status
-              data.active = newStatus;
+              data.active = newStatusForTable;
+
               // Redraw the row with updated data
               dt_user.row(row).data(data).draw();
             })
@@ -529,6 +539,7 @@ $(function () {
         }
       });
     });
+
   }
 
   // Filter form control to default size

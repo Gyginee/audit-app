@@ -51,9 +51,27 @@ class UserController extends Controller
     // PUT/PATCH /api/users/{user}
     public function update(Request $request, User $user)
     {
-        // Similar validation and update logic
-    }
+        $validator = Validator::make($request->all(), [
+            'type' => 'sometimes|required',
+            'active' => 'sometimes|required|boolean',
+            'full_name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255|unique:users,username,' . $user->id,
+            'password' => 'sometimes|required|string|min:6',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $user->update($request->only('type', 'active', 'full_name', 'username', 'password'));
+
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        return response()->json($user, 200);
+    }
     // DELETE /api/users/{user}
     public function destroy(User $user)
     {
