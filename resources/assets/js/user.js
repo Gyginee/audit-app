@@ -220,6 +220,53 @@ function formatAnyDate(dateString = new Date()) {
   return dateToFormat.toLocaleDateString('en-GB', options);
 }
 
+// This function is triggered when the Excel file is uploaded
+function handleExcelUpload(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = e.target.result;
+    const workbook = XLSX.read(data, {
+        type: 'binary'
+    });
+
+    // Assuming the data is in the first sheet
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    // Post each row to the API
+    jsonData.forEach(row => {
+      fetch(userData, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(row)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Data uploaded successfully!',
+          icon: 'success'
+        });
+      })
+      .catch(error => {
+        Swal.fire({
+          title: 'Error!',
+          text: error.message,
+          icon: 'error'
+        });
+      });
+    });
+  };
+  reader.readAsBinaryString(file);
+}
+
 
 // Datatable (jquery)
 $(function () {
@@ -311,7 +358,7 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" id="toggle-active" class="text-body toggle-active"><i class="ti ti-player-stop ti-sm mx-2"></i></a>' +
+              '<a href="javascript:;" id="toggle-active" class="text-body toggle-active"><i class="ti ti-status-change ti-sm mx-2"></i></a>' +
               '<a href="javascript:;" id="del-btn" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
               '</div>'
             );
@@ -344,7 +391,7 @@ $(function () {
               text: '<i class="ti ti-printer me-2"></i>Print',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3, 4, 5],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -360,7 +407,7 @@ $(function () {
               text: '<i class="ti ti-file-text me-2"></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3, 4, 5],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -373,7 +420,7 @@ $(function () {
               text: '<i class="ti ti-file-spreadsheet me-2"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3, 4, 5],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -386,7 +433,7 @@ $(function () {
               text: '<i class="ti ti-file-code-2 me-2"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3, 4, 5],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -399,7 +446,7 @@ $(function () {
               text: '<i class="ti ti-copy me-2"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3, 4, 5],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -416,7 +463,7 @@ $(function () {
             'data-bs-toggle': 'offcanvas',
             'data-bs-target': '#offcanvasAddUser'
           }
-        }
+        },
       ]
     });
 

@@ -8,20 +8,20 @@
     },
     {
       "url": "report",
-      "icon": "menu-icon tf-icons ti ti-file",
+      "icon": "menu-icon tf-icons ti ti-report",
       "name": "Báo cáo",
       "slug": "report"
     },
     {
       "url": "schedule",
       "name": "Lịch làm việc",
-      "icon": "menu-icon tf-icons ti ti-alert-triangle",
+      "icon": "menu-icon tf-icons ti ti-calendar-time",
       "slug": "schedule"
     },
     {
       "url": "user",
       "name": "Tài khoản",
-      "icon": "menu-icon tf-icons ti ti-login",
+      "icon": "menu-icon tf-icons ti ti-users-group",
       "slug": "user"
     }
   ]
