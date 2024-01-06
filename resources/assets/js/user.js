@@ -84,7 +84,17 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       body: JSON.stringify(data)
     })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          // If response is not ok, parse and throw an error
+          return response.json().then(err => {
+            // Extract the error message from the 'username' array
+            const errorMessage = err.username ? err.username[0] : 'An unknown error occurred';
+            throw new Error(errorMessage);
+          });
+        }
+        return response.json();
+      })
       .then(data => {
         // Assuming 'data' is the object containing user info
         dt_user.rows
@@ -94,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
             username: data.username,
             type: data.type,
             active: "Hoạt động",
-            created_at: getCurrentDateFormatted()
+            created_at: formatAnyDate()
           }])
           .draw();
         Swal.fire({
@@ -108,10 +118,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       })
       .catch(error => {
-        console.error('Error:', error);
         Swal.fire({
-          title: 'Error!',
-          text: 'Xảy ra sự cố khi thêm tài khoản!',
+          title: 'Lỗi!',
+          text: error.message, // Display the extracted error message
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-primary'
@@ -204,14 +213,14 @@ async function makeAjaxRequestPromise(url, method, requestData) {
     throw error;
   }
 }
-function formatDate(dateString) {
+
+function formatAnyDate(dateString = new Date()) {
   const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Date(dateString).toLocaleDateString('en-GB', options);
+  const dateToFormat = new Date(dateString);
+  return dateToFormat.toLocaleDateString('en-GB', options);
 }
-function getCurrentDateFormatted() {
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Date().toLocaleDateString('en-GB', options);
-}
+
+
 // Datatable (jquery)
 $(function () {
   let borderColor, bodyBg, headingColor;
@@ -291,7 +300,7 @@ $(function () {
           targets: [5],
           title: 'Ngày tạo',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + formatDate(full['created_at']) + '</span>';
+            return '<span class="fw-medium">' + formatAnyDate(full['created_at']) + '</span>';
           }
         },
         {
