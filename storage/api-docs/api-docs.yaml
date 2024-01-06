@@ -676,6 +676,8 @@ definitions:
         type: 'string'
       password:
         type: 'string'
+      active:
+        type: 'boolean'
 
   Store:
     type: 'object'

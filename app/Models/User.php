@@ -17,7 +17,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = ['type', 'full_name', 'username', 'password'];
+    protected $fillable = ['active','type', 'full_name', 'username', 'password'];
 
     public function schedules()
     {
