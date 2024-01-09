@@ -18,8 +18,9 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7);
             $table->decimal('longitude', 10, 7);
             $table->string('type');
-            $table->unsignedBigInteger('round_id');
+            $table->unsignedBigInteger('report_id');
             $table->timestamps();
+            $table->foreign('report_id')->references('id')->on('reports');
         });
 
     }

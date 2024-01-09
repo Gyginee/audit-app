@@ -1,7 +1,7 @@
 <?php
 // Variables
 return [
-  "creatorName" => "Audit",
+  "creatorName" => "Gyginee",
   "creatorUrl" => "https://Gyginee.com",
   "templateName" => "Audit",
   "templateSuffix" => "HDC",

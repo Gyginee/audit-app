@@ -8,11 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class AuditRoundTwo extends Model
 {
     use HasFactory;
-    protected $fillable = ['store_code', 'user_id', 'report_id'];
+
+    protected $fillable = [
+        'store_code',
+        'status',
+        'description',
+        'user_id',
+    ];
 
     public function store()
     {
-        return $this->belongsTo(Store::class, 'store_code');
+        return $this->belongsTo(Store::class, 'store_code', 'store_code');
     }
 
     public function user()

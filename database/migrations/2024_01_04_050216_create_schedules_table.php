@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
+            $table->string('store_code');
             $table->unsignedBigInteger('user_id');
             $table->string('type');
-            $table->unsignedBigInteger('round_id');
-            $table->date('add_date');
             $table->date('start_date');
             $table->date('end_date');
+            $table->foreign('store_code')->references('store_code')->on('stores');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });

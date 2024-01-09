@@ -8,10 +8,22 @@ use Illuminate\Database\Eloquent\Model;
 class Schedule extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'type', 'round_id', 'add_date', 'start_date', 'end_date'];
+
+    protected $fillable = [
+        'store_code',
+        'user_id',
+        'type',
+        'start_date',
+        'end_date',
+    ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'store_code', 'store_code');
     }
 }
