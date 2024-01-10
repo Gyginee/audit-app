@@ -78,83 +78,84 @@ document.addEventListener('DOMContentLoaded', function () {
     const store_name = document.getElementById('store-name').value;
     const store_code = document.getElementById('store-code').value;
     const store_address = document.getElementById('store-address').value;
-    const province_id = document.getElementById('store-province').value;
-    let latitude, longitude;
 
-    try {
-      // Cố gắng lấy tọa độ từ địa chỉ
-      const coords = getLatitudeLongitude(store_address);
-      latitude = coords.latitude;
-      longitude = coords.longitude;
-    } catch (error) {
-      console.error('Error getting location: ', error);
-      // Đặt giá trị mặc định hoặc để trống
-      latitude = "Không xác định";
-      longitude = "Không xác định";
-    }
+    const province_id = parseInt(document.getElementById('store-province').value);
 
-    const data = {
-      store_code: store_code,
-      store_name: store_name,
-      address: store_address,
-      province_id: province_id,
-      lat: latitude,
-      long: longitude
-    };
+    // Make a GET request to the Nominatim API
+    fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+      .then(response => response.json())
+      .then(rdata => {
+        // Check if there are results
+        if (rdata.length > 0) {
+          const firstResult = rdata[0]; // Get the first result
+          const latitude = parseFloat(firstResult.lat);
+          const longitude = parseFloat(firstResult.lon);
 
-    fetch(storeData, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-      .then(response => {
-        if (!response.ok) {
-          // If response is not ok, parse and throw an error
-          return response.json().then(err => {
-            // Extract the error message from the 'storename' array
-            const errorMessage = err.storename ? err.storename[0] : 'An unknown error occurred';
-            throw new Error(errorMessage);
-          });
+          //console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+          const data = {
+            store_code: store_code,
+            store_name: store_name,
+            address: store_address,
+            province_id: province_id,
+            latitude: latitude,
+            longitude: longitude
+          };
+
+          fetch(storeData, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+            .then(response => {
+              return response.json();
+            })
+            .then(data => {
+              // Assuming 'data' is the object containing store info
+              const province = getProvinceName(data.province_id)
+              dt_store.rows
+                .add([
+                  {
+                    store_code: data.store_code,
+                    store_name: data.store_name,
+                    address: data.address,
+                    province_id: data.province_id,
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                  }
+                ])
+                .draw();
+              Swal.fire({
+                title: 'Thành công!',
+                text: 'Thêm cửa hàng thành công!',
+                icon: 'success',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              });
+            })
+            .catch(error => {
+              Swal.fire({
+                title: 'Lỗi!',
+                text: error.message, // Display the extracted error message
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              });
+            });
+        } else {
+          console.log("No results found.");
         }
-        return response.json();
-      })
-      .then(data => {
-        // Assuming 'data' is the object containing store info
-        dt_store.rows
-          .add([
-            {
-              id: data.id,
-              full_name: data.full_name,
-              storename: data.storename,
-              type: data.type,
-              active: 'Hoạt động',
-              created_at: formatAnyDate()
-            }
-          ])
-          .draw();
-        Swal.fire({
-          title: 'Thành công!',
-          text: 'Thêm cửa hàng thành công!',
-          icon: 'success',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
       })
       .catch(error => {
-        Swal.fire({
-          title: 'Lỗi!',
-          text: error.message, // Display the extracted error message
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
+        console.error("An error occurred:", error);
       });
+
   }
 
   // Attach event listener to form's submit event
@@ -172,31 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
 function getProvinceName(id) {
   return provincesData[id] || 'Unknown Province';
 }
-
-async function getLatitudeLongitude(address) {
-  try {
-    const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyDaaQsorx7RXju4ceXDzLG0Gt26DYBfL3A`);
-
-    if (!response.ok) {
-      throw new Error('Request failed');
-    }
-
-    const data = await response.json();
-
-    if (data.status === 'OK' && data.results.length > 0) {
-      const location = data.results[0].geometry.location;
-      const latitude = location.lat;
-      const longitude = location.lng;
-      return { latitude, longitude };
-    } else {
-      throw new Error('Geocoding was not successful');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-}
-
 
 // Function to handle AJAX requests
 async function makeAjaxRequest(url, method, requestData) {
@@ -271,12 +247,6 @@ async function makeAjaxRequestPromise(url, method, requestData) {
   }
 }
 
-function formatAnyDate(dateString = new Date()) {
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  const dateToFormat = new Date(dateString);
-  return dateToFormat.toLocaleDateString('en-GB', options);
-}
-
 // Datatable (jquery)
 $(function () {
   let borderColor, bodyBg, headingColor;
@@ -306,17 +276,7 @@ $(function () {
           targets: [1],
           title: 'Tên cửa hàng',
           render: function (data, type, full, meta) {
-            var $name = full['store_name'];
-
-            var $row_output =
-              '<div class="d-flex justify-content-start align-items-center store-name">' +
-              '<div class="d-flex flex-column">' +
-              '<span class="fw-medium">' +
-              $name +
-              '</span>' +
-              '</div>' +
-              '</div>';
-            return $row_output;
+            return '<span class="fw-medium">' + full['store_name'] + '</span>';
           }
         },
         {
@@ -335,19 +295,18 @@ $(function () {
         },
         {
           targets: [4],
-
           title: 'Latitude',
           render: function (data, type, full, meta) {
-            /*  if (full['latitude']==null){
-               const coords =  getLatitudeLongitude(full['address']);
-               var latitude = coords.latitude;
-               return '<span class="fw-medium">' + latitude + '</span>';
-             }else {
-               return '<span class="fw-medium">' + full['latitude'] + '</span>';
-             } */
-            const coords = getLatitudeLongitude(full['address']);
-            var latitude = coords.latitude;
-            return '<span class="fw-medium">' + latitude + '</span>';
+            if (full['latitude'] == null) {
+              fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                  const latitude = parseFloat(data[0].lat);
+                  return '<span class="fw-medium">' + latitude + '</span>';
+                })
+            } else {
+              return '<span class="fw-medium">' + full['latitude'] + '</span>';
+            }
           }
         },
         {
@@ -355,9 +314,12 @@ $(function () {
           title: 'Longitude',
           render: function (data, type, full, meta) {
             if (full['longitude'] == null) {
-              const coords = getLatitudeLongitude(full['address']);
-              var longitude = coords.longitude;
-              return '<span class="fw-medium">' + longitude + '</span>';
+              fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                  const longitude = parseFloat(data[0].lon);
+                  return '<span class="fw-medium">' + longitude + '</span>';
+                })
             } else {
               return '<span class="fw-medium">' + full['longitude'] + '</span>';
             }
@@ -371,7 +333,6 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" id="toggle-active" class="text-body toggle-active"><i class="ti ti-status-change ti-sm mx-2"></i></a>' +
               '<a href="javascript:;" id="del-btn" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
               '</div>'
             );
@@ -484,8 +445,6 @@ $(function () {
     makeAjaxRequest(storeData, 'GET', {}).then(function (response) {
       if (Array.isArray(response) && response.length > 0) {
         response.forEach(function (store) {
-          store.active = store.active == 1 ? 'Hoạt động' : 'Tạm dừng';
-          // Directly add store object to DataTable
           dt_store.rows.add([store]).draw();
         });
       }

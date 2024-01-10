@@ -15,10 +15,10 @@ return new class extends Migration
             $table->string('store_code')->primary();
             $table->string('store_name');
             $table->text('address');
-            $table->unsignedBigInteger('province_id');
+            $table->integer('province_id');
             $table->decimal('latitude', 10, 7);
             $table->decimal('longitude', 10, 7);
-            $table->foreign('province_id')->references('id')->on('provinces');
+            $table->foreign('province_id')->references('province_id')->on('provinces');
             $table->timestamps();
         });
 

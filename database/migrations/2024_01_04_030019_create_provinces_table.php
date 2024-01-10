@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('province_id');
+            $table->integer('province_id')->unique();;
             $table->string('division_type');
             $table->string('codename');
             $table->integer('phone_code');
