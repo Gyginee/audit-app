@@ -67,20 +67,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Function to handle form submission
-  function handleFormSubmission() {
-    const storenamee = document.getElementById('store-name').value;
-    const storecode = document.getElementById('store-code').value;
-    const storeaddress = document.getElementById('store-address').value;
 
-    const type = document.getElementById('store-type').value;
+  // Function to handle form submission
+ function handleFormSubmission() {
+    const store_name = document.getElementById('store-name').value;
+    const store_code = document.getElementById('store-code').value;
+    const store_address = document.getElementById('store-address').value;
+
+    let latitude, longitude;
+
+    try {
+      // Cố gắng lấy tọa độ từ địa chỉ
+      const coords =  getLatitudeLongitude(store_address);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    } catch (error) {
+      console.error('Error getting location: ', error);
+      // Đặt giá trị mặc định hoặc để trống
+      latitude = undefined;
+      longitude = undefined;
+    }
 
     const data = {
-      full_name: name,
-      storename: storename,
-      password: password,
-      type: type,
-      active: true
+      store_code: store_code,
+      store_name: store_name,
+      address: store_address,
+      lat: latitude,
+      long: longitude
     };
 
     fetch(storeData, {
@@ -117,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .draw();
         Swal.fire({
           title: 'Thành công!',
-          text: 'Thêm tài khoản thành công!',
+          text: 'Thêm cửa hàng thành công!',
           icon: 'success',
           customClass: {
             confirmButton: 'btn btn-primary'
@@ -148,6 +161,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+async function getLatitudeLongitude(address) {
+  return new Promise((resolve, reject) => {
+    var geocoder = new google.maps.Geocoder();
+
+    geocoder.geocode({ 'address': address }, function (results, status) {
+      if (status === google.maps.GeocoderStatus.OK) {
+        var latitude = results[0].geometry.location.lat();
+        var longitude = results[0].geometry.location.lng();
+        resolve({ latitude, longitude });
+      } else {
+        reject("Geocode was not successful for the following reason: " + status);
+      }
+    });
+  });
+}
 
 // Function to handle AJAX requests
 async function makeAjaxRequest(url, method, requestData) {

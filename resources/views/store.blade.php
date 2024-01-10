@@ -23,6 +23,8 @@
     <script src="{{ asset('assets/vendor/libs/cleavejs/cleave.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/cleavejs/cleave-phone.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaaQsorx7RXju4ceXDzLG0Gt26DYBfL3A&libraries=places"></script>
+
 @endsection
 
 @section('page-script')
