@@ -5,41 +5,50 @@
 'use strict';
 
 // Variable declaration for table
-var dt_user_table = $('.datatables-users');
-var dt_user;
+var dt_store_table = $('.datatables-stores');
+var dt_store;
 
-let userData = baseUrl + 'api/users';
+let storeData = baseUrl + 'api/stores';
 
 document.addEventListener('DOMContentLoaded', function () {
-  const addNewUserForm = document.getElementById('addNewUserForm');
+
+  fetch('https://provinces.open-api.vn/api/p/')
+  .then(response => response.json())
+  .then(provinces => {
+    const provinceSelect = document.getElementById('store-province');
+    provinces.forEach(province => {
+      const option = document.createElement('option');
+      option.value = province.code;
+      option.textContent = province.name;
+      provinceSelect.appendChild(option);
+    });
+  });
+
+  const addNewStoreForm = document.getElementById('addNewStoreForm');
   const submitButton = document.getElementById('submitFormButton');
 
   // Initialize Form Validation
-  const fv = FormValidation.formValidation(addNewUserForm, {
+  const fv = FormValidation.formValidation(addNewStoreForm, {
     fields: {
-      userFullname: {
+      storeName: {
         validators: {
           notEmpty: {
-            message: 'Thiếu tên tài khoản' // Missing client's name
+            message: 'Thiếu tên cửa hàng'
           }
         }
       },
-      userUsername: {
+      storeCode: {
         validators: {
           notEmpty: {
-            message: 'Thiếu tài khoản' // Missing client's name
+            message: 'Thiếu mã cửa hàng'
           }
         }
       },
 
-      userPassword: {
+      storeAddress: {
         validators: {
           notEmpty: {
-            message: 'Thiếu mật khẩu' // Missing client's name
-          },
-          stringLength: {
-            min: 6,
-            message: 'Mật khẩu phải có tối thiểu 6 ký tự'
+            message: 'Thiếu địa chỉ'
           }
         }
       }
@@ -58,23 +67,36 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Function to handle form submission
-  function handleFormSubmission() {
-    const name = document.getElementById('user-fullname').value;
-    const username = document.getElementById('user-username').value;
-    const password = document.getElementById('user-password').value;
 
-    const type = document.getElementById('user-type').value;
+  // Function to handle form submission
+ function handleFormSubmission() {
+    const store_name = document.getElementById('store-name').value;
+    const store_code = document.getElementById('store-code').value;
+    const store_address = document.getElementById('store-address').value;
+
+    let latitude, longitude;
+
+    try {
+      // Cố gắng lấy tọa độ từ địa chỉ
+      const coords =  getLatitudeLongitude(store_address);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    } catch (error) {
+      console.error('Error getting location: ', error);
+      // Đặt giá trị mặc định hoặc để trống
+      latitude = undefined;
+      longitude = undefined;
+    }
 
     const data = {
-      full_name: name,
-      username: username,
-      password: password,
-      type: type,
-      active: true
+      store_code: store_code,
+      store_name: store_name,
+      address: store_address,
+      lat: latitude,
+      long: longitude
     };
 
-    fetch(userData, {
+    fetch(storeData, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -85,21 +107,21 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!response.ok) {
           // If response is not ok, parse and throw an error
           return response.json().then(err => {
-            // Extract the error message from the 'username' array
-            const errorMessage = err.username ? err.username[0] : 'An unknown error occurred';
+            // Extract the error message from the 'storename' array
+            const errorMessage = err.storename ? err.storename[0] : 'An unknown error occurred';
             throw new Error(errorMessage);
           });
         }
         return response.json();
       })
       .then(data => {
-        // Assuming 'data' is the object containing user info
-        dt_user.rows
+        // Assuming 'data' is the object containing store info
+        dt_store.rows
           .add([
             {
               id: data.id,
               full_name: data.full_name,
-              username: data.username,
+              storename: data.storename,
               type: data.type,
               active: 'Hoạt động',
               created_at: formatAnyDate()
@@ -108,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .draw();
         Swal.fire({
           title: 'Thành công!',
-          text: 'Thêm tài khoản thành công!',
+          text: 'Thêm cửa hàng thành công!',
           icon: 'success',
           customClass: {
             confirmButton: 'btn btn-primary'
@@ -139,6 +161,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+async function getLatitudeLongitude(address) {
+  return new Promise((resolve, reject) => {
+    var geocoder = new google.maps.Geocoder();
+
+    geocoder.geocode({ 'address': address }, function (results, status) {
+      if (status === google.maps.GeocoderStatus.OK) {
+        var latitude = results[0].geometry.location.lat();
+        var longitude = results[0].geometry.location.lng();
+        resolve({ latitude, longitude });
+      } else {
+        reject("Geocode was not successful for the following reason: " + status);
+      }
+    });
+  });
+}
 
 // Function to handle AJAX requests
 async function makeAjaxRequest(url, method, requestData) {
@@ -233,9 +271,9 @@ $(function () {
     headingColor = config.colors.headingColor;
   }
 
-  // Users datatable
-  if (dt_user_table.length) {
-    dt_user = dt_user_table.DataTable({
+  // Stores datatable
+  if (dt_store_table.length) {
+    dt_store = dt_store_table.DataTable({
       columnDefs: [
         {
           targets: [0],
@@ -259,7 +297,7 @@ $(function () {
               '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
 
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center user-name">' +
+              '<div class="d-flex justify-content-start align-items-center store-name">' +
               '<div class="avatar-wrapper">' +
               '<div class="avatar me-2">' +
               $output +
@@ -278,7 +316,7 @@ $(function () {
           targets: [2],
           title: 'Tài khoản',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + full['username'] + '</span>';
+            return '<span class="fw-medium">' + full['storename'] + '</span>';
           }
         },
         {
@@ -343,7 +381,7 @@ $(function () {
               text: '<i class="ti ti-printer me-2"></i>Print',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5],
+                columns: [0, 1, 2, 3, 4],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -359,7 +397,7 @@ $(function () {
               text: '<i class="ti ti-file-text me-2"></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5],
+                columns: [0, 1, 2, 3, 4],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -372,7 +410,7 @@ $(function () {
               text: '<i class="ti ti-file-spreadsheet me-2"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5],
+                columns: [0, 1, 2, 3, 4],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -385,7 +423,7 @@ $(function () {
               text: '<i class="ti ti-file-code-2 me-2"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5],
+                columns: [0, 1, 2, 3, 4],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -398,7 +436,7 @@ $(function () {
               text: '<i class="ti ti-copy me-2"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5],
+                columns: [0, 1, 2, 3, 4],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -413,26 +451,26 @@ $(function () {
           className: 'add-new btn btn-primary',
           attr: {
             'data-bs-toggle': 'offcanvas',
-            'data-bs-target': '#offcanvasAddUser'
+            'data-bs-target': '#offcanvasAddStore'
           }
-        },
+        }
       ]
     });
 
-    makeAjaxRequest(userData, 'GET', {}).then(function (response) {
+    makeAjaxRequest(storeData, 'GET', {}).then(function (response) {
       if (Array.isArray(response) && response.length > 0) {
-        response.forEach(function (user) {
-          user.active = user.active == 1 ? 'Hoạt động' : 'Tạm dừng';
-          // Directly add user object to DataTable
-          dt_user.rows.add([user]).draw();
+        response.forEach(function (store) {
+          store.active = store.active == 1 ? 'Hoạt động' : 'Tạm dừng';
+          // Directly add store object to DataTable
+          dt_store.rows.add([store]).draw();
         });
       }
     });
 
     // Handle Delete Record
-    $('.datatables-users tbody').on('click', '.delete-record', function () {
+    $('.datatables-stores tbody').on('click', '.delete-record', function () {
       var row = $(this).closest('tr');
-      var data = dt_user.row(row).data();
+      var data = dt_store.row(row).data();
       var id = data.id;
 
       Swal.fire({
@@ -449,7 +487,7 @@ $(function () {
       }).then(function (result) {
         if (result.value) {
           // Send a delete request to the server
-          fetch(userData + '/' + id, {
+          fetch(storeData + '/' + id, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json'
@@ -458,7 +496,7 @@ $(function () {
           })
             .then(function () {
               // Remove the row from the DataTable
-              dt_user.row(row).remove().draw();
+              dt_store.row(row).remove().draw();
               Swal.fire({
                 icon: 'success',
                 title: 'Deleted!',
@@ -476,9 +514,9 @@ $(function () {
     });
 
     // Handle Toggle Active Status
-    $('.datatables-users tbody').on('click', '.toggle-active', function () {
+    $('.datatables-stores tbody').on('click', '.toggle-active', function () {
       var row = $(this).closest('tr');
-      var data = dt_user.row(row).data();
+      var data = dt_store.row(row).data();
       var id = data.id;
 
       // Determine if the current status is 'Active'
@@ -504,7 +542,7 @@ $(function () {
       }).then(function (result) {
         if (result.value) {
           // Send a request to the server to toggle the active status
-          fetch(userData + '/' + id, {
+          fetch(storeData + '/' + id, {
             method: 'PUT', // Or 'PATCH', depending on your API
             headers: {
               'Content-Type': 'application/json'
@@ -530,7 +568,7 @@ $(function () {
               data.active = newStatusForTable;
 
               // Redraw the row with updated data
-              dt_user.row(row).data(data).draw();
+              dt_store.row(row).data(data).draw();
             })
             .catch(error => {
               console.error('Error:', error);

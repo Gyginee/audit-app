@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('audit_round_twos', function (Blueprint $table) {
             $table->id();
             $table->string('store_code');
+            $table->string('status');
+            $table->string('description');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('report_id');
+
             $table->foreign('store_code')->references('store_code')->on('stores');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();

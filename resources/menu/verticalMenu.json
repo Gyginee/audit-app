@@ -8,14 +8,14 @@
     },
     {
       "url": "report",
-      "icon": "menu-icon tf-icons ti ti-report",
+      "icon": "menu-icon tf-icons ti ti-report-search",
       "name": "Báo cáo",
       "slug": "report"
     },
     {
       "url": "schedule",
       "name": "Lịch làm việc",
-      "icon": "menu-icon tf-icons ti ti-calendar-time",
+      "icon": "menu-icon tf-icons ti ti-calendar-event",
       "slug": "schedule"
     },
     {
@@ -23,6 +23,12 @@
       "name": "Tài khoản",
       "icon": "menu-icon tf-icons ti ti-users-group",
       "slug": "user"
+    },
+    {
+      "url": "store",
+      "name": "Cửa hàng",
+      "icon": "menu-icon tf-icons ti ti-building-store",
+      "slug": "store"
     }
   ]
 }

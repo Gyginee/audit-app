@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class ImagePath extends Model
 {
     use HasFactory;
-    protected $fillable = ['url', 'latitude', 'longitude', 'type', 'round_id'];
+    protected $fillable = ['url', 'latitude', 'longitude', 'type', 'report_id'];
 }

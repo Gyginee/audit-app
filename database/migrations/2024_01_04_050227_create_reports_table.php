@@ -13,11 +13,16 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->string('status');
-            $table->text('note');
+            $table->string('store_code');
+            $table->unsignedBigInteger('province_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('type_report');
+            $table->boolean('finish'); // Corrected 'boolen' to 'boolean'
+            $table->foreign('province_id')->references('id')->on('provinces');
+            $table->foreign('store_code')->references('store_code')->on('stores');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
-
     }
 
     /**
