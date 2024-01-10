@@ -9,7 +9,14 @@ class Province extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['province_name'];
+    protected $fillable = [
+      'name',
+      'division_type',
+      'codename',
+      'phone_code',
+      'province_id', // Updated column name
+  ];
+
 
     public function stores()
     {

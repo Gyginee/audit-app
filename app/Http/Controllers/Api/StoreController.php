@@ -22,9 +22,7 @@ class StoreController extends Controller
             'store_code' => 'required|unique:stores|max:255',
             'store_name' => 'required|max:255',
             'address' => 'required', // Assuming text field, no max limit
-            'province_id' => 'required|integer|exists:provinces,id', // Ensure province exists
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric'
+            'province_id' => 'required|integer|exists:provinces,province_id', // Ensure province exists
         ]);
 
         if ($validator->fails()) {
@@ -52,7 +50,7 @@ class StoreController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric'
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }

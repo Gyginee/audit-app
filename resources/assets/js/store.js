@@ -8,21 +8,26 @@
 var dt_store_table = $('.datatables-stores');
 var dt_store;
 
+// Global object to store provinces data
+var provincesData = {};
+
 let storeData = baseUrl + 'api/stores';
 
 document.addEventListener('DOMContentLoaded', function () {
 
+  // Fetch provinces data and populate select dropdown
   fetch('https://provinces.open-api.vn/api/p/')
-  .then(response => response.json())
-  .then(provinces => {
-    const provinceSelect = document.getElementById('store-province');
-    provinces.forEach(province => {
-      const option = document.createElement('option');
-      option.value = province.code;
-      option.textContent = province.name;
-      provinceSelect.appendChild(option);
+    .then(response => response.json())
+    .then(provinces => {
+      const provinceSelect = document.getElementById('store-province');
+      provinces.forEach(province => {
+        provincesData[province.code] = province.name; // Store province data
+        const option = document.createElement('option');
+        option.value = province.code;
+        option.textContent = province.name;
+        provinceSelect.appendChild(option);
+      });
     });
-  });
 
   const addNewStoreForm = document.getElementById('addNewStoreForm');
   const submitButton = document.getElementById('submitFormButton');
@@ -69,86 +74,88 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   // Function to handle form submission
- function handleFormSubmission() {
+  function handleFormSubmission() {
     const store_name = document.getElementById('store-name').value;
     const store_code = document.getElementById('store-code').value;
     const store_address = document.getElementById('store-address').value;
 
-    let latitude, longitude;
+    const province_id = parseInt(document.getElementById('store-province').value);
 
-    try {
-      // Cố gắng lấy tọa độ từ địa chỉ
-      const coords =  getLatitudeLongitude(store_address);
-      latitude = coords.latitude;
-      longitude = coords.longitude;
-    } catch (error) {
-      console.error('Error getting location: ', error);
-      // Đặt giá trị mặc định hoặc để trống
-      latitude = undefined;
-      longitude = undefined;
-    }
+    // Make a GET request to the Nominatim API
+    fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+      .then(response => response.json())
+      .then(rdata => {
+        // Check if there are results
+        if (rdata.length > 0) {
+          const firstResult = rdata[0]; // Get the first result
+          const latitude = parseFloat(firstResult.lat);
+          const longitude = parseFloat(firstResult.lon);
 
-    const data = {
-      store_code: store_code,
-      store_name: store_name,
-      address: store_address,
-      lat: latitude,
-      long: longitude
-    };
+          //console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
 
-    fetch(storeData, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-      .then(response => {
-        if (!response.ok) {
-          // If response is not ok, parse and throw an error
-          return response.json().then(err => {
-            // Extract the error message from the 'storename' array
-            const errorMessage = err.storename ? err.storename[0] : 'An unknown error occurred';
-            throw new Error(errorMessage);
-          });
+          const data = {
+            store_code: store_code,
+            store_name: store_name,
+            address: store_address,
+            province_id: province_id,
+            latitude: latitude,
+            longitude: longitude
+          };
+
+          fetch(storeData, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+            .then(response => {
+              return response.json();
+            })
+            .then(data => {
+              // Assuming 'data' is the object containing store info
+              const province = getProvinceName(data.province_id)
+              dt_store.rows
+                .add([
+                  {
+                    store_code: data.store_code,
+                    store_name: data.store_name,
+                    address: data.address,
+                    province_id: data.province_id,
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                  }
+                ])
+                .draw();
+              Swal.fire({
+                title: 'Thành công!',
+                text: 'Thêm cửa hàng thành công!',
+                icon: 'success',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              });
+            })
+            .catch(error => {
+              Swal.fire({
+                title: 'Lỗi!',
+                text: error.message, // Display the extracted error message
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              });
+            });
+        } else {
+          console.log("No results found.");
         }
-        return response.json();
-      })
-      .then(data => {
-        // Assuming 'data' is the object containing store info
-        dt_store.rows
-          .add([
-            {
-              id: data.id,
-              full_name: data.full_name,
-              storename: data.storename,
-              type: data.type,
-              active: 'Hoạt động',
-              created_at: formatAnyDate()
-            }
-          ])
-          .draw();
-        Swal.fire({
-          title: 'Thành công!',
-          text: 'Thêm cửa hàng thành công!',
-          icon: 'success',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
       })
       .catch(error => {
-        Swal.fire({
-          title: 'Lỗi!',
-          text: error.message, // Display the extracted error message
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
+        console.error("An error occurred:", error);
       });
+
   }
 
   // Attach event listener to form's submit event
@@ -162,20 +169,9 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-async function getLatitudeLongitude(address) {
-  return new Promise((resolve, reject) => {
-    var geocoder = new google.maps.Geocoder();
-
-    geocoder.geocode({ 'address': address }, function (results, status) {
-      if (status === google.maps.GeocoderStatus.OK) {
-        var latitude = results[0].geometry.location.lat();
-        var longitude = results[0].geometry.location.lng();
-        resolve({ latitude, longitude });
-      } else {
-        reject("Geocode was not successful for the following reason: " + status);
-      }
-    });
-  });
+// Function to get province name from ID
+function getProvinceName(id) {
+  return provincesData[id] || 'Unknown Province';
 }
 
 // Function to handle AJAX requests
@@ -251,12 +247,6 @@ async function makeAjaxRequestPromise(url, method, requestData) {
   }
 }
 
-function formatAnyDate(dateString = new Date()) {
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  const dateToFormat = new Date(dateString);
-  return dateToFormat.toLocaleDateString('en-GB', options);
-}
-
 // Datatable (jquery)
 $(function () {
   let borderColor, bodyBg, headingColor;
@@ -277,67 +267,62 @@ $(function () {
       columnDefs: [
         {
           targets: [0],
-          title: 'ID',
+          title: 'Mã cửa hàng',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + full['id'] + '</span>';
+            return '<span class="fw-medium">' + full['store_code'] + '</span>';
           }
         },
         {
           targets: [1],
-          title: 'Họ và tên',
+          title: 'Tên cửa hàng',
           render: function (data, type, full, meta) {
-            var $name = full['full_name'];
-            // For Avatar badge
-            var stateNum = Math.floor(Math.random() * 6);
-            var states = ['success', 'danger', 'warning', 'info', 'dark', 'primary', 'secondary'];
-            var $state = states[stateNum],
-              $initials = $name.match(/\b\w/g) || [];
-            $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-            var $output =
-              '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
-
-            var $row_output =
-              '<div class="d-flex justify-content-start align-items-center store-name">' +
-              '<div class="avatar-wrapper">' +
-              '<div class="avatar me-2">' +
-              $output +
-              '</div>' +
-              '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<span class="fw-medium">' +
-              $name +
-              '</span>' +
-              '</div>' +
-              '</div>';
-            return $row_output;
+            return '<span class="fw-medium">' + full['store_name'] + '</span>';
           }
         },
         {
           targets: [2],
-          title: 'Tài khoản',
+          title: 'Địa chỉ',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + full['storename'] + '</span>';
+            return '<span class="fw-medium">' + full['address'] + '</span>';
           }
         },
         {
           targets: [3],
-          title: 'Loại tài khoản',
+          title: 'Tỉnh/Thành phố',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + full['type'] + '</span>';
+            return '<span class="fw-medium">' + getProvinceName(full['province_id']) + '</span>';
           }
         },
         {
           targets: [4],
-          title: 'Trạng thái',
+          title: 'Latitude',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + full['active'] + '</span>';
+            if (full['latitude'] == null) {
+              fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                  const latitude = parseFloat(data[0].lat);
+                  return '<span class="fw-medium">' + latitude + '</span>';
+                })
+            } else {
+              return '<span class="fw-medium">' + full['latitude'] + '</span>';
+            }
           }
         },
         {
           targets: [5],
-          title: 'Ngày tạo',
+          title: 'Longitude',
           render: function (data, type, full, meta) {
-            return '<span class="fw-medium">' + formatAnyDate(full['created_at']) + '</span>';
+            if (full['longitude'] == null) {
+              fetch(`https://nominatim.openstreetmap.org/search?q=${store_address}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                  const longitude = parseFloat(data[0].lon);
+                  return '<span class="fw-medium">' + longitude + '</span>';
+                })
+            } else {
+              return '<span class="fw-medium">' + full['longitude'] + '</span>';
+            }
           }
         },
         {
@@ -348,7 +333,6 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" id="toggle-active" class="text-body toggle-active"><i class="ti ti-status-change ti-sm mx-2"></i></a>' +
               '<a href="javascript:;" id="del-btn" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
               '</div>'
             );
@@ -371,6 +355,7 @@ $(function () {
         searchPlaceholder: 'Tìm kiếm..'
       },
       buttons: [
+
         {
           extend: 'collection',
           text: '<i class="ti ti-screen-share me-1 ti-xs"></i>Xuất File',
@@ -381,7 +366,7 @@ $(function () {
               text: '<i class="ti ti-printer me-2"></i>Print',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -397,7 +382,7 @@ $(function () {
               text: '<i class="ti ti-file-text me-2"></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -410,7 +395,7 @@ $(function () {
               text: '<i class="ti ti-file-spreadsheet me-2"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -423,7 +408,7 @@ $(function () {
               text: '<i class="ti ti-file-code-2 me-2"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -436,7 +421,7 @@ $(function () {
               text: '<i class="ti ti-copy me-2"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
-                columns: [0, 1, 2, 3, 4],
+                columns: [0, 1, 2, 3],
                 format: {
                   body: function (inner, coldex, rowdex) {
                     return extractTextFromHTML(inner);
@@ -460,8 +445,6 @@ $(function () {
     makeAjaxRequest(storeData, 'GET', {}).then(function (response) {
       if (Array.isArray(response) && response.length > 0) {
         response.forEach(function (store) {
-          store.active = store.active == 1 ? 'Hoạt động' : 'Tạm dừng';
-          // Directly add store object to DataTable
           dt_store.rows.add([store]).draw();
         });
       }
@@ -474,7 +457,7 @@ $(function () {
       var id = data.id;
 
       Swal.fire({
-        title: 'Xác nhận xoá tài khoản?',
+        title: 'Xác nhận xoá cửa hàng?',
         text: 'Không thể hoàn tác nếu như xác nhận!',
         icon: 'warning',
         showCancelButton: true,
@@ -500,7 +483,7 @@ $(function () {
               Swal.fire({
                 icon: 'success',
                 title: 'Deleted!',
-                text: 'Đã xoá tài khoản.',
+                text: 'Đã xoá cửa hàng.',
                 customClass: {
                   confirmButton: 'btn btn-success'
                 }
@@ -508,70 +491,6 @@ $(function () {
             })
             .catch(error => {
               console.error(error);
-            });
-        }
-      });
-    });
-
-    // Handle Toggle Active Status
-    $('.datatables-stores tbody').on('click', '.toggle-active', function () {
-      var row = $(this).closest('tr');
-      var data = dt_store.row(row).data();
-      var id = data.id;
-
-      // Determine if the current status is 'Active'
-      var isActive = data.active === 'Hoạt động';
-
-      // Convert the text to boolean for the API request
-      var newStatusForApi = !isActive;
-
-      // Determine the action text
-      var actionText = isActive ? 'vô hiệu hóa' : 'kích hoạt';
-
-      Swal.fire({
-        title: `Xác nhận ${actionText} tài khoản?`,
-        text: `Bạn có chắc chắn muốn ${actionText} tài khoản này?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Chắc chắn!',
-        customClass: {
-          confirmButton: 'btn btn-primary me-3',
-          cancelButton: 'btn btn-label-secondary'
-        },
-        buttonsStyling: false
-      }).then(function (result) {
-        if (result.value) {
-          // Send a request to the server to toggle the active status
-          fetch(storeData + '/' + id, {
-            method: 'PUT', // Or 'PATCH', depending on your API
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ active: newStatusForApi })
-          })
-            .then(response => response.json())
-            .then(data => {
-              // Update the UI to reflect the new status
-              Swal.fire({
-                icon: 'success',
-                title: `${actionText.charAt(0).toUpperCase() + actionText.slice(1)} thành công!`,
-                text: `Tài khoản đã được ${actionText}.`,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
-
-              // Convert the API response back to text
-              var newStatusForTable = data.active ? 'Hoạt động' : 'Tạm dừng';
-
-              // Update the data object with the new status
-              data.active = newStatusForTable;
-
-              // Redraw the row with updated data
-              dt_store.row(row).data(data).draw();
-            })
-            .catch(error => {
-              console.error('Error:', error);
             });
         }
       });

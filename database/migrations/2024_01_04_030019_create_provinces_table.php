@@ -9,19 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
-            $table->string('province_name');
+            $table->string('name');
+            $table->integer('province_id')->unique();;
+            $table->string('division_type');
+            $table->string('codename');
+            $table->integer('phone_code');
+            // You can add more columns here based on your data
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('provinces');
     }
