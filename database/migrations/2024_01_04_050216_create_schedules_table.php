@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('type');
             $table->date('start_date');
-            $table->date('end_date');
             $table->foreign('store_code')->references('store_code')->on('stores');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();

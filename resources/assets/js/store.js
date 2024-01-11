@@ -264,24 +264,25 @@ $(function () {
   // Stores datatable
   if (dt_store_table.length) {
     dt_store = dt_store_table.DataTable({
+      
       columnDefs: [
         {
           targets: [0],
-          title: 'Mã cửa hàng',
+          title: 'Mã',
           render: function (data, type, full, meta) {
             return '<span class="fw-medium">' + full['store_code'] + '</span>';
           }
         },
         {
           targets: [1],
-          title: 'Tên cửa hàng',
+          title: 'Tên',
           render: function (data, type, full, meta) {
             return '<span class="fw-medium">' + full['store_name'] + '</span>';
           }
         },
         {
           targets: [2],
-          title: 'Địa chỉ',
+          title: 'Địa chỉ cửa hàng',
           render: function (data, type, full, meta) {
             return '<span class="fw-medium">' + full['address'] + '</span>';
           }
